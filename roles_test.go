@@ -1,9 +1,11 @@
 package roles_test
 
 import (
+	"net/http"
 	"testing"
 
-	"github.com/qor/roles"
+	"github.com/egnwd/roles"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAllow(t *testing.T) {
@@ -112,4 +114,14 @@ func TestCustomizePermission(t *testing.T) {
 	if !permission2.HasPermission(roles.Read, "admin") {
 		t.Errorf("Admin should has no permission to Read")
 	}
+}
+
+func TestHasRoles(t *testing.T) {
+	role := "admin"
+	roles.Register(role, func(req *http.Request, user interface{}) bool {
+		return user.(string) == role
+	})
+
+	assert.True(t, roles.HasRole(&http.Request{}, "admin", role))
+	assert.False(t, roles.HasRole(&http.Request{}, "non-admin", role))
 }
