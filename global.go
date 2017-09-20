@@ -3,7 +3,7 @@ package roles
 import "net/http"
 
 // Global global role instance
-var Global = &Role{}
+var Global = New()
 
 // Register register role with conditions
 func Register(name string, fc Checker) {

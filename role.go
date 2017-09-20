@@ -15,7 +15,11 @@ type Checker func(req *http.Request, user interface{}) bool
 
 // New initialize a new `Role`
 func New() *Role {
-	return &Role{}
+	role := new(Role)
+	role.Register(Anyone, func(req *http.Request, user interface{}) bool {
+		return true
+	})
+	return role
 }
 
 // Role is a struct contains all roles definitions
@@ -31,7 +35,7 @@ func (role *Role) Register(name string, fc Checker) {
 
 	definition := role.definitions[name]
 	if definition != nil {
-		fmt.Printf("%v already defined, overwrited it!\n", name)
+		fmt.Printf("%v already defined, overwritten it!\n", name)
 	}
 	role.definitions[name] = fc
 }

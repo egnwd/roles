@@ -1,127 +1,127 @@
-package roles_test
+package roles
 
 import (
 	"net/http"
 	"testing"
 
-	"github.com/egnwd/roles"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAllow(t *testing.T) {
-	permission := roles.Allow(roles.Read, "api")
+	permission := Allow(Read, "api")
 
-	if !permission.HasPermission(roles.Read, "api") {
+	if !permission.HasPermission(Read, "api") {
 		t.Errorf("API should has permission to Read")
 	}
 
-	if permission.HasPermission(roles.Update, "api") {
+	if permission.HasPermission(Update, "api") {
 		t.Errorf("API should has no permission to Update")
 	}
 
-	if permission.HasPermission(roles.Read, "admin") {
+	if permission.HasPermission(Read, "admin") {
 		t.Errorf("admin should has no permission to Read")
 	}
 
-	if permission.HasPermission(roles.Update, "admin") {
+	if permission.HasPermission(Update, "admin") {
 		t.Errorf("admin should has no permission to Update")
 	}
 }
 
 func TestDeny(t *testing.T) {
-	permission := roles.Deny(roles.Create, "api")
+	permission := Deny(Create, "api")
 
-	if !permission.HasPermission(roles.Read, "api") {
+	if !permission.HasPermission(Read, "api") {
 		t.Errorf("API should has permission to Read")
 	}
 
-	if !permission.HasPermission(roles.Update, "api") {
+	if !permission.HasPermission(Update, "api") {
 		t.Errorf("API should has permission to Update")
 	}
 
-	if permission.HasPermission(roles.Create, "api") {
+	if permission.HasPermission(Create, "api") {
 		t.Errorf("API should has no permission to Update")
 	}
 
-	if !permission.HasPermission(roles.Read, "admin") {
+	if !permission.HasPermission(Read, "admin") {
 		t.Errorf("admin should has permission to Read")
 	}
 
-	if !permission.HasPermission(roles.Create, "admin") {
+	if !permission.HasPermission(Create, "admin") {
 		t.Errorf("admin should has permission to Update")
 	}
 }
 
 func TestCRUD(t *testing.T) {
-	permission := roles.Allow(roles.CRUD, "admin")
-	if !permission.HasPermission(roles.Read, "admin") {
+	permission := Allow(CRUD, "admin")
+	if !permission.HasPermission(Read, "admin") {
 		t.Errorf("Admin should has permission to Read")
 	}
 
-	if !permission.HasPermission(roles.Update, "admin") {
+	if !permission.HasPermission(Update, "admin") {
 		t.Errorf("Admin should has permission to Update")
 	}
 
-	if permission.HasPermission(roles.Read, "api") {
+	if permission.HasPermission(Read, "api") {
 		t.Errorf("API should has no permission to Read")
 	}
 
-	if permission.HasPermission(roles.Update, "api") {
+	if permission.HasPermission(Update, "api") {
 		t.Errorf("API should has no permission to Update")
 	}
 }
 
 func TestAll(t *testing.T) {
-	permission := roles.Allow(roles.Update, roles.Anyone)
+	permission := Allow(Update, Anyone)
 
-	if permission.HasPermission(roles.Read, "api") {
+	if permission.HasPermission(Read, "api") {
 		t.Errorf("API should has no permission to Read")
 	}
 
-	if !permission.HasPermission(roles.Update, "api") {
+	if !permission.HasPermission(Update, "api") {
 		t.Errorf("API should has permission to Update")
 	}
 
-	permission2 := roles.Deny(roles.Update, roles.Anyone)
+	permission2 := Deny(Update, Anyone)
 
-	if !permission2.HasPermission(roles.Read, "api") {
+	if !permission2.HasPermission(Read, "api") {
 		t.Errorf("API should has permission to Read")
 	}
 
-	if permission2.HasPermission(roles.Update, "api") {
+	if permission2.HasPermission(Update, "api") {
 		t.Errorf("API should has no permission to Update")
 	}
 }
 
 func TestCustomizePermission(t *testing.T) {
-	var customized roles.PermissionMode = "customized"
-	permission := roles.Allow(customized, "admin")
+	var customized PermissionMode = "customized"
+	permission := Allow(customized, "admin")
 
 	if !permission.HasPermission(customized, "admin") {
 		t.Errorf("Admin should has customized permission")
 	}
 
-	if permission.HasPermission(roles.Read, "admin") {
+	if permission.HasPermission(Read, "admin") {
 		t.Errorf("Admin should has no permission to Read")
 	}
 
-	permission2 := roles.Deny(customized, "admin")
+	permission2 := Deny(customized, "admin")
 
 	if permission2.HasPermission(customized, "admin") {
 		t.Errorf("Admin should has customized permission")
 	}
 
-	if !permission2.HasPermission(roles.Read, "admin") {
+	if !permission2.HasPermission(Read, "admin") {
 		t.Errorf("Admin should has no permission to Read")
 	}
 }
 
 func TestHasRoles(t *testing.T) {
 	role := "admin"
-	roles.Register(role, func(req *http.Request, user interface{}) bool {
+	Register(role, func(req *http.Request, user interface{}) bool {
 		return user.(string) == role
 	})
 
-	assert.True(t, roles.HasRole(&http.Request{}, "admin", role))
-	assert.False(t, roles.HasRole(&http.Request{}, "non-admin", role))
+	assert.True(t, HasRole(&http.Request{}, "admin", role))
+	assert.True(t, HasRole(&http.Request{}, "admin", Anyone))
+	assert.False(t, HasRole(&http.Request{}, "non-admin", role))
 }
